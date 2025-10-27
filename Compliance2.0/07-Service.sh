@@ -41,6 +41,11 @@ check_command() {
     fi
 }
 
+# Функция проверки существования службы
+service_exists() {
+    systemctl list-unit-files --type=service | grep -q "^$1"
+}
+
 # Основная функция
 main() {
     log "=== Настройка системных служб ==="
@@ -79,10 +84,14 @@ main() {
 
     # Настройка systemd-timesyncd
     log "Настройка systemd-timesyncd..."
-    systemctl stop systemd-timesyncd.service
-    systemctl disable systemd-timesyncd.service
-    systemctl --now mask systemd-timesyncd.service
-    check_command "Настройка systemd-timesyncd"
+    if service_exists "systemd-timesyncd.service"; then
+        systemctl stop systemd-timesyncd.service
+        systemctl disable systemd-timesyncd.service
+        systemctl --now mask systemd-timesyncd.service
+        check_command "Настройка systemd-timesyncd"
+    else
+        warn "Служба systemd-timesyncd.service не существует, пропускаем настройку"
+    fi
 
     # установка библиотеки libpam-pwquality
     log "установка библиотеки libpam-pwquality"

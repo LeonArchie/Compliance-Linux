@@ -51,8 +51,11 @@
 Установка и запуск
 
 1. Клонируйте репозиторий:
-git clone <repository-url>
-cd security-hardening-scripts
+wget https://github.com/LeonArchie/Compliance-Linux/archive/refs/heads/main.zip
+
+unzip main.zip
+
+cd Compliance-Linux-main
 
 2. Добавуьте SSH ключ для вашего пользователя
 
