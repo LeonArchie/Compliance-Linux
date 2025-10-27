@@ -117,10 +117,11 @@ main() {
         "17-Network2.sh"
         "18-sudo_a_pass_a_root.sh"
         "19-at_allow.sh"
-        "995-audit.sh"
-        "996-privileges.sh"
-        "997-AIDE.sh"
-        "998-Wazuh.sh"
+        "20-pwquality.sh"
+        "996-audit.sh"
+        "997-privileges.sh"
+        "998-AIDE.sh"
+        "999-Wazuh.sh"
     )
     
     # Показать меню
