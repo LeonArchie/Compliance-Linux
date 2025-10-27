@@ -41,14 +41,36 @@ check_command() {
     fi
 }
 
+# Настройка FileCreateMode для rsyslog
+configure_rsyslog_filemode() {
+    log "Настройка режима создания файлов rsyslog..."
+    
+    # Создаем директорию если не существует
+    mkdir -p /etc/rsyslog.d/
+    
+    # Добавляем настройку FileCreateMode в основной конфиг
+    if ! grep -q '^\$FileCreateMode' /etc/rsyslog.conf && ! grep -q '^\$FileCreateMode' /etc/rsyslog.d/*.conf 2>/dev/null; then
+        echo '$FileCreateMode 0640' >> /etc/rsyslog.d/60-filemode.conf
+        log "Добавлен \$FileCreateMode 0640 в конфигурацию"
+    else
+        # Обновляем существующие настройки
+        sed -i 's/^\$FileCreateMode.*/\$FileCreateMode 0640/' /etc/rsyslog.conf 2>/dev/null || true
+        for file in /etc/rsyslog.d/*.conf; do
+            if [ -f "$file" ]; then
+                sed -i 's/^\$FileCreateMode.*/\$FileCreateMode 0640/' "$file" 2>/dev/null || true
+            fi
+        done
+    fi
+}
+
 # Основная функция
 main() {
     log "=== Настройка rsyslog ==="
     
     check_root
     
-    # Настройка rsyslog
-    log "Настройка rsyslog..."
+    # Настройка rsyslog - отключение приема удаленных логов
+    log "Отключение приема удаленных логов rsyslog..."
     sed -i 's/^\s*$ModLoad imtcp/#$ModLoad imtcp/' /etc/rsyslog.conf
     sed -i 's/^\s*$InputTCPServerRun/#$InputTCPServerRun/' /etc/rsyslog.conf
     sed -i 's/^\s*module(load="imtcp")/#module(load="imtcp")/' /etc/rsyslog.conf
@@ -65,13 +87,14 @@ main() {
         fi
     done
 
-    # Настройка прав доступа к файлам логов
-    log "Настройка прав доступа к файлам логов..."
-    sed -i '/^global(/a\\n# Set file creation mode to 0640\n$FileCreateMode 0640' /etc/rsyslog.conf
+    # Настройка FileCreateMode
+    configure_rsyslog_filemode
 
     # Проверка конфигурации
     log "Проверка конфигурации rsyslog..."
-    rsyslogd -N 1 > /dev/null 2>&1
+    if ! rsyslogd -N 1 > /dev/null 2>&1; then
+        warn "Предупреждение: конфигурация rsyslog содержит предупреждения, но продолжаем выполнение"
+    fi
     
     # Перезагрузка службы
     log "Перезагрузка службы rsyslog..."

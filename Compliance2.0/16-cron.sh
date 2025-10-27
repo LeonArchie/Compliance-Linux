@@ -82,6 +82,7 @@ secure_cron_directory() {
     
     if [ -d "$dir_path" ]; then
         chown root:root "$dir_path"
+        chown root:root /etc/cron.allow
         chmod og-rwx "$dir_path"
         check_command "Установка прав для $dir_path"
         

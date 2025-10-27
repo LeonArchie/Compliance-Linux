@@ -74,6 +74,111 @@ check_ssh_key() {
     fi
 }
 
+# Функция настройки прав доступа к файлам SSH
+configure_ssh_permissions() {
+    log "Настройка прав доступа к файлам SSH..."
+    
+    # Устанавливаем правильные права для основного конфигурационного файла
+    chmod u-x,og-rwx /etc/ssh/sshd_config
+    chown root:root /etc/ssh/sshd_config
+    check_command "Установка прав для /etc/ssh/sshd_config"
+    
+    # Устанавливаем правильные права для файлов в каталоге конфигурации
+    if [ -d "/etc/ssh/sshd_config.d" ]; then
+        find /etc/ssh/sshd_config.d -type f -name "*.conf" | while read -r config_file; do
+            if [ -e "$config_file" ]; then
+                chmod u-x,og-rwx "$config_file"
+                chown root:root "$config_file"
+                log "✓ Установлены права для $config_file"
+            fi
+        done
+    fi
+    
+    log "Права доступа к файлам SSH настроены"
+}
+
+# Функция настройки ограничения доступа по пользователям
+configure_ssh_access() {
+    log "Настройка ограничения доступа по пользователям..."
+    
+    # Добавляем разрешение только для пользователя archie
+    if ! grep -q "^AllowUsers" /etc/ssh/sshd_config; then
+        echo "AllowUsers archie" >> /etc/ssh/sshd_config
+        log "✓ Добавлено ограничение AllowUsers archie"
+    else
+        log "✓ Ограничение AllowUsers уже настроено"
+    fi
+}
+
+# Функция настройки баннера
+configure_ssh_banner() {
+    log "Настройка баннера SSH..."
+    
+    # Устанавливаем баннер
+    if ! grep -q "^Banner" /etc/ssh/sshd_config; then
+        echo "Banner /etc/issue.net" >> /etc/ssh/sshd_config
+        log "✓ Настроен баннер /etc/issue.net"
+    else
+        log "✓ Баннер уже настроен"
+    fi
+}
+
+# Функция настройки таймаутов SSH
+configure_ssh_timeouts() {
+    log "Настройка таймаутов SSH..."
+    
+    # Устанавливаем ClientAliveInterval и ClientAliveCountMax
+    sed -i 's/^#*ClientAliveInterval.*/ClientAliveInterval 15/g' /etc/ssh/sshd_config
+    sed -i 's/^#*ClientAliveCountMax.*/ClientAliveCountMax 3/g' /etc/ssh/sshd_config
+    
+    # Если параметры не существуют, добавляем их
+    if ! grep -q "^ClientAliveInterval" /etc/ssh/sshd_config; then
+        echo "ClientAliveInterval 15" >> /etc/ssh/sshd_config
+    fi
+    
+    if ! grep -q "^ClientAliveCountMax" /etc/ssh/sshd_config; then
+        echo "ClientAliveCountMax 3" >> /etc/ssh/sshd_config
+    fi
+    
+    log "✓ Таймауты SSH настроены: ClientAliveInterval=15, ClientAliveCountMax=3"
+}
+
+# Функция отключения переадресации
+configure_ssh_forwarding() {
+    log "Настройка отключения переадресации SSH..."
+    
+    # Отключаем все виды переадресации
+    sed -i 's/^#*DisableForwarding.*/DisableForwarding yes/g' /etc/ssh/sshd_config
+    
+    # Если параметр не существует, добавляем его
+    if ! grep -q "^DisableForwarding" /etc/ssh/sshd_config; then
+        echo "DisableForwarding yes" >> /etc/ssh/sshd_config
+    fi
+    
+    log "✓ Переадресация SSH отключена"
+}
+
+# Функция настройки MAC-алгоритмов
+configure_ssh_macs() {
+    log "Настройка MAC-алгоритмов SSH..."
+    
+    # Определяем безопасные MAC-алгоритмы
+    local safe_macs="hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,umac-128-etm@openssh.com,hmac-sha2-512,hmac-sha2-256,umac-128@openssh.com"
+    
+    # Запрещаем слабые MAC-алгоритмы
+    local disabled_macs="-hmac-md5,-hmac-md5-96,-hmac-ripemd160,-hmac-sha1,-hmac-sha1-96,-umac-64@openssh.com,-umac-128@openssh.com,-hmac-md5-etm@openssh.com,-hmac-md5-96-etm@openssh.com,-hmac-ripemd160-etm@openssh.com,-hmac-sha1-etm@openssh.com,-hmac-sha1-96-etm@openssh.com,-umac-64-etm@openssh.com,-umac-128-etm@openssh.com"
+    
+    # Устанавливаем MAC-алгоритмы
+    sed -i 's/^#*MACs.*/MACs '"$safe_macs"'/g' /etc/ssh/sshd_config
+    
+    # Если параметр не существует, добавляем его
+    if ! grep -q "^MACs" /etc/ssh/sshd_config; then
+        echo "MACs $safe_macs" >> /etc/ssh/sshd_config
+    fi
+    
+    log "✓ Безопасные MAC-алгоритмы настроены"
+}
+
 # Функция настройки SSH
 configure_ssh() {
     log "Настройка SSH..."
@@ -84,8 +189,8 @@ configure_ssh() {
         log "Создан backup конфигурации SSH: /etc/ssh/sshd_config.backup"
     fi
     
-    # Применяем настройки SSH
-    log "Применение настроек SSH..."
+    # Применяем основные настройки SSH
+    log "Применение основных настроек SSH..."
     sed -i 's/^Include/#Include/g' /etc/ssh/sshd_config
     sed -i 's/^#Port 22/Port 56314/g' /etc/ssh/sshd_config
     sed -i 's/^#SyslogFacility AUTH/SyslogFacility AUTH/g' /etc/ssh/sshd_config
@@ -96,6 +201,15 @@ configure_ssh() {
     sed -i 's/^#MaxSessions 10/MaxSessions 2/g' /etc/ssh/sshd_config
     sed -i 's/^#PasswordAuthentication yes/PasswordAuthentication no/g' /etc/ssh/sshd_config
 
+    # Применяем дополнительные настройки безопасности
+    configure_ssh_permissions
+    configure_ssh_access
+    configure_ssh_banner
+    configure_ssh_timeouts
+    configure_ssh_forwarding
+    configure_ssh_macs
+    configure_ssh_maxstartups
+
     # Перезагрузка службы SSH
     log "Перезагрузка службы SSH..."
     systemctl restart ssh
@@ -103,7 +217,22 @@ configure_ssh() {
     
     log "SSH настроен на порт 56314, аутентификация по паролю отключена"
     log "Текущие настройки SSH:"
-    grep -E "^(Port|PasswordAuthentication|PermitRootLogin)" /etc/ssh/sshd_config
+    grep -E "^(Port|PasswordAuthentication|PermitRootLogin|AllowUsers|Banner|ClientAliveInterval|ClientAliveCountMax|DisableForwarding|MACs)" /etc/ssh/sshd_config
+}
+
+configure_ssh_maxstartups() {
+    log "Настройка MaxStartups..."
+    
+    # Устанавливаем безопасные значения: 10:30:60
+    # Первое число: 1-10, второе: 1-30, третье: 1-60
+    sed -i 's/^#*MaxStartups.*/MaxStartups 10:30:60/g' /etc/ssh/sshd_config
+    
+    # Если параметр не существует, добавляем его
+    if ! grep -q "^MaxStartups" /etc/ssh/sshd_config; then
+        echo "MaxStartups 10:30:60" >> /etc/ssh/sshd_config
+    fi
+    
+    log "✓ MaxStartups настроен: 10:30:60"
 }
 
 # Основная логика скрипта

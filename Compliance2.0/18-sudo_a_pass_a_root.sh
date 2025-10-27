@@ -169,24 +169,7 @@ EOF
         fi
     done
     check_command "Настройка umask для root"
-    
-    # 9. Ограничение доступа к команде su
-    log "Ограничение доступа к команде su..."
-    
-    # Создание группы для su
-    if ! getent group sugroup >/dev/null; then
-        groupadd sugroup
-    fi
-    
-    # Настройка /etc/pam.d/su
-    if ! grep -q "pam_wheel.so" /etc/pam.d/su; then
-        echo "auth required pam_wheel.so use_uid group=sugroup" >> /etc/pam.d/su
-    else
-        sed -i 's/^#*auth\s*required\s*pam_wheel\.so.*/auth required pam_wheel.so use_uid group=sugroup/' /etc/pam.d/su
-    fi
-    check_command "Ограничение доступа к команде su"
-    
-    log "=== Настройка завершена ==="
+
     warn "Для применения всех изменений может потребоваться перезагрузка системы."
     warn "Выполните: sudo reboot"
 }
