@@ -118,6 +118,8 @@ main() {
         "18-sudo_a_pass_a_root.sh"
         "19-at_allow.sh"
         "20-pwquality.sh"
+        "21-packages.sh"
+        "22-disable-ipv6.sh"
         "996-audit.sh"
         "997-privileges.sh"
         "998-AIDE.sh"
