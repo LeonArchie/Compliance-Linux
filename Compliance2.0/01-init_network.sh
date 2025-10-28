@@ -53,7 +53,7 @@ network:
   ethernets:
     eth0:
       dhcp4: false
-      addresses: [192.168.8.11/24]
+      addresses: [192.168.8.13/24]
       nameservers:
         addresses: [192.168.8.2, 192.168.8.3]
       routes:
