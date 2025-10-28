@@ -53,6 +53,8 @@
 1. Клонируйте репозиторий:
 wget https://github.com/LeonArchie/Compliance-Linux/archive/refs/heads/main.zip
 
+apt install unzip
+
 unzip main.zip
 
 cd Compliance-Linux-main
