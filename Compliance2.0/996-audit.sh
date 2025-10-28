@@ -303,9 +303,15 @@ verify_installation() {
         else
             error "✗ Правило для clock_settime с a0=0x0 не найдено"
         fi
+
+        if auditctl -l | grep -q "/usr/sbin/usermod.*usermod"; then
+            log "✓ Правило для usermod найдено"
+        else
+            error "✗ Правило для usermod не найдено"
+        fi
         
         # Проверка правил для команд
-        for cmd in chcon setfacl chacl usermod; do
+        for cmd in chcon setfacl chacl; do
             if auditctl -l | grep -q "$cmd.*perm_chng"; then
                 log "✓ Правило для $cmd найдено"
             else
@@ -313,8 +319,8 @@ verify_installation() {
             fi
         done
         
-        auditctl -l | head -20
-        log "... (показаны первые 20 правил, всего $rule_count)"
+        auditctl -l | head -50
+        log "... (показаны первые 50 правил, всего $rule_count)"
     else
         warn "Загружено мало правил: $rule_count"
         auditctl -l
