@@ -150,7 +150,7 @@ main() {
             ;;
         3)
             info "Запуск скриптов с 02 по последний..."
-            for script in "${scripts[@]:1}"; do
+            for script in "${scripts[@]:2}"; do
                 if confirm_execution "$script"; then
                     run_script "$script"
                 else
