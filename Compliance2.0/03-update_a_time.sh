@@ -66,7 +66,8 @@ main() {
     sed -i 's/^pool/#pool/g' /etc/chrony/chrony.conf
     echo "server 192.168.8.15 iburst" >> /etc/chrony/chrony.conf
     echo "server 192.168.8.15 iburst" >> /etc/chrony/sources.d/local-ntp-server.sources
-    
+    echo "cmddeny all" >> /etc/chrony/chrony.conf
+
     systemctl restart chrony
     log "Проверка источников времени:"
     chronyc sources
