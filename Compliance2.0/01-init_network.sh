@@ -69,6 +69,7 @@ EOF
     
     log "Проверка сетевых настроек..."
     ip addr show eth0
+    chmod 600 /etc/netplan/*.yaml
 }
 
 # Обработка сигналов
