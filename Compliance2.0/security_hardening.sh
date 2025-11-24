@@ -99,6 +99,7 @@ main() {
     
     # Массив всех скриптов в порядке выполнения
     scripts=(
+        "00-change-hostname.sh"
         "01-init_network.sh"
         "02-Mount.sh"
         "03-update_a_time.sh"
@@ -129,9 +130,10 @@ main() {
     # Показать меню
     echo "Выберите опцию:"
     echo "1) Только настройка сети (01-init_network.sh)"
-    echo "2) Все скрипты с 02 по последний"
-    echo "3) Выбрать конкретный скрипт"
-    echo "4) Все скрипты по порядку"
+    echo "2) Только смена имени"
+    echo "3) Все скрипты с 02 по последний"
+    echo "4) Выбрать конкретный скрипт"
+    echo "5) Все скрипты по порядку"
     echo "q) Выход"
     echo
     
@@ -143,6 +145,10 @@ main() {
             run_script "01-init_network.sh"
             ;;
         2)
+            info "Запуск только смены имени"
+            run_script "00-change-hostname.sh"
+            ;;
+        3)
             info "Запуск скриптов с 02 по последний..."
             for script in "${scripts[@]:1}"; do
                 if confirm_execution "$script"; then
@@ -153,7 +159,7 @@ main() {
                 echo
             done
             ;;
-        3)
+        4)
             info "Доступные скрипты:"
             for i in "${!scripts[@]}"; do
                 echo "$((i+1))) ${scripts[$i]}"
@@ -166,7 +172,7 @@ main() {
                 error "Неверный номер скрипта"
             fi
             ;;
-        4)
+        5)
             info "Запуск всех скриптов по порядку..."
             for script in "${scripts[@]}"; do
                 if confirm_execution "$script"; then
