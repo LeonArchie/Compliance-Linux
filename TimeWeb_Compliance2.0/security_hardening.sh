@@ -99,9 +99,6 @@ main() {
     
     # Массив всех скриптов в порядке выполнения
     scripts=(
-        "00-change-hostname.sh"
-        "01-init_network.sh"
-        "02-Mount.sh"
         "03-update_a_time.sh"
         "05-kernel-disable.sh"
         "06-grub-pass.sh"
@@ -115,23 +112,16 @@ main() {
         "14-SSH.sh"
         "15-SSH_banner.sh"
         "16-cron.sh"
-        "17-Network2.sh"
         "18-sudo_a_pass_a_root.sh"
         "19-at_allow.sh"
         "20-pwquality.sh"
         "21-packages.sh"
-        "22-disable-ipv6.sh"
         "996-audit.sh"
         "997-privileges.sh"
-        "998-AIDE.sh"
-        "999-Wazuh.sh"
     )
     
     # Показать меню
     echo "Выберите опцию:"
-    echo "1) Только настройка сети (01-init_network.sh)"
-    echo "2) Только смена имени"
-    echo "3) Все скрипты с 02 по последний"
     echo "4) Выбрать конкретный скрипт"
     echo "5) Все скрипты по порядку"
     echo "q) Выход"
@@ -140,25 +130,6 @@ main() {
     read -p "Ваш выбор: " choice
     
     case $choice in
-        1)
-            info "Запуск только настройки сети..."
-            run_script "01-init_network.sh"
-            ;;
-        2)
-            info "Запуск только смены имени"
-            run_script "00-change-hostname.sh"
-            ;;
-        3)
-            info "Запуск скриптов с 02 по последний..."
-            for script in "${scripts[@]:2}"; do
-                if confirm_execution "$script"; then
-                    run_script "$script"
-                else
-                    warn "Пропуск скрипта $script"
-                fi
-                echo
-            done
-            ;;
         4)
             info "Доступные скрипты:"
             for i in "${!scripts[@]}"; do
