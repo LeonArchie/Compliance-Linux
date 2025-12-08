@@ -1,0 +1,175 @@
+#!/bin/bash
+
+# Управляющий скрипт для настройки безопасности системы
+# Включает настройку сети, времени, SSH, аудита, мониторинга и других компонентов
+
+set -e
+
+# Цвета для вывода
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+# Функции для логирования
+log() {
+    echo -e "${GREEN}[INFO]${NC} $1"
+}
+
+warn() {
+    echo -e "${YELLOW}[WARN]${NC} $1"
+}
+
+error() {
+    echo -e "${RED}[ERROR]${NC} $1"
+}
+
+info() {
+    echo -e "${BLUE}[INFO]${NC} $1"
+}
+
+# Проверка прав root
+check_root() {
+    if [[ $EUID -ne 0 ]]; then
+        error "Этот скрипт должен быть запущен с правами root"
+        exit 1
+    fi
+}
+
+# Функция проверки выполнения команды
+check_command() {
+    if [ $? -eq 0 ]; then
+        log "✓ $1"
+    else
+        error "✗ Ошибка: $1"
+        exit 1
+    fi
+}
+
+# Функция подтверждения выполнения
+confirm_execution() {
+    local script_name=$1
+    warn "Выполнить скрипт $script_name? (y/N)"
+    read -r response
+    case "$response" in
+        [yY][eE][sS]|[yY])
+            return 0
+            ;;
+        *)
+            return 1
+            ;;
+    esac
+}
+
+# Функция запуска скрипта
+run_script() {
+    local script=$1
+    local script_name=$(basename "$script")
+    
+    if [[ ! -f "$script" ]]; then
+        error "Скрипт $script не найден"
+        return 1
+    fi
+    
+    info "Запуск скрипта: $script_name"
+    
+    # Даем права на выполнение если нужно
+    if [[ ! -x "$script" ]]; then
+        chmod +x "$script"
+    fi
+    
+    # Запускаем скрипт
+    if bash "$script"; then
+        log "Скрипт $script_name выполнен успешно"
+    else
+        error "Скрипт $script_name завершился с ошибкой"
+        return 1
+    fi
+}
+
+# Основная функция
+main() {
+    check_root
+    
+    log "=== Управляющий скрипт настройки безопасности ==="
+    log "Дата: $(date)"
+    log "Хост: $(hostname)"
+    echo
+    
+    # Массив всех скриптов в порядке выполнения
+    scripts=(
+        "03-update_a_time.sh"
+        "05-kernel-disable.sh"
+        "06-grub-pass.sh"
+        "07-Service.sh"
+        "08-session.sh"
+        "09-banner.sh"
+        "10-network.sh"
+        "11-sudo.sh"
+        "12-rsyslog.sh"
+        "13-logs.sh"
+        "14-SSH.sh"
+        "15-SSH_banner.sh"
+        "16-cron.sh"
+        "18-sudo_a_pass_a_root.sh"
+        "19-at_allow.sh"
+        "20-pwquality.sh"
+        "21-packages.sh"
+        "996-audit.sh"
+        "997-privileges.sh"
+    )
+    
+    # Показать меню
+    echo "Выберите опцию:"
+    echo "4) Выбрать конкретный скрипт"
+    echo "5) Все скрипты по порядку"
+    echo "q) Выход"
+    echo
+    
+    read -p "Ваш выбор: " choice
+    
+    case $choice in
+        4)
+            info "Доступные скрипты:"
+            for i in "${!scripts[@]}"; do
+                echo "$((i+1))) ${scripts[$i]}"
+            done
+            echo
+            read -p "Введите номер скрипта: " script_num
+            if [[ $script_num -ge 1 && $script_num -le ${#scripts[@]} ]]; then
+                run_script "${scripts[$((script_num-1))]}"
+            else
+                error "Неверный номер скрипта"
+            fi
+            ;;
+        5)
+            info "Запуск всех скриптов по порядку..."
+            for script in "${scripts[@]}"; do
+                if confirm_execution "$script"; then
+                    run_script "$script"
+                else
+                    warn "Пропуск скрипта $script"
+                fi
+                echo
+            done
+            ;;
+        q|Q)
+            info "Выход"
+            exit 0
+            ;;
+        *)
+            error "Неверный выбор"
+            exit 1
+            ;;
+    esac
+    
+    log "=== Настройка безопасности завершена ==="
+    warn "Рекомендуется перезагрузить систему для применения всех изменений"
+}
+
+# Обработка сигналов
+trap 'error "Скрипт прерван"; exit 1' INT TERM
+
+# Запуск основной функции
+main "$@"
