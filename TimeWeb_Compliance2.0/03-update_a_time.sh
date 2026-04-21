@@ -64,8 +64,8 @@ main() {
     systemctl start chrony
 
     sed -i 's/^pool/#pool/g' /etc/chrony/chrony.conf
-    echo "server ntp0.ntp-servers.net iburst" >> /etc/chrony/chrony.conf
-    echo "server ntp0.ntp-servers.net iburst" >> /etc/chrony/sources.d/local-ntp-server.sources
+    echo "server pool.ntp.org iburst" >> /etc/chrony/chrony.conf
+    echo "server pool.ntp.org iburst" >> /etc/chrony/sources.d/local-ntp-server.sources
     echo "cmddeny all" >> /etc/chrony/chrony.conf
 
     systemctl restart chrony
