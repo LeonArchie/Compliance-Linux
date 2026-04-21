@@ -116,7 +116,6 @@ main() {
         "19-at_allow.sh"
         "20-pwquality.sh"
         "21-packages.sh"
-        "996-audit.sh"
         "997-privileges.sh"
     )
     
