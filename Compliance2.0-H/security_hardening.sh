@@ -107,10 +107,8 @@ main() {
         "06-grub-pass.sh"
         "07-Service.sh"
         "08-session.sh"
-        "09-banner.sh"
         "10-network.sh"
         "11-sudo.sh"
-        "12-rsyslog.sh"
         "13-logs.sh"
         "14-SSH.sh"
         "15-SSH_banner.sh"
@@ -120,10 +118,6 @@ main() {
         "19-at_allow.sh"
         "20-pwquality.sh"
         "21-packages.sh"
-        "22-disable-ipv6.sh"
-        "996-audit.sh"
-        "997-privileges.sh"
-        "998-AIDE.sh"
     )
     
     # Показать меню
