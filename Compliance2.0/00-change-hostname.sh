@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Укажите желаемое имя сервера
-name="serv-hw2-k8s-master"
+name="hostname"
 
 # Проверка прав суперпользователя
 if [ "$EUID" -ne 0 ]; then

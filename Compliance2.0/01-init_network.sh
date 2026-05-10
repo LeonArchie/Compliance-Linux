@@ -53,12 +53,12 @@ network:
   ethernets:
     eth0:
       dhcp4: false
-      addresses: [192.168.8.13/24]
+      addresses: [*.*.*.*/24]
       nameservers:
-        addresses: [192.168.8.2, 192.168.8.3]
+        addresses: [*.*.*.*, *.*.*.*]
       routes:
         - to: default
-          via: 192.168.8.1
+          via: *.*.*.*
           on-link: true
   version: 2
 EOF
