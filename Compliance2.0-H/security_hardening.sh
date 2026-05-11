@@ -118,6 +118,7 @@ main() {
         "19-at_allow.sh"
         "20-pwquality.sh"
         "21-packages.sh"
+        "23-zabbix-agent2-inst.sh"
     )
     
     # Показать меню

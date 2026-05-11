@@ -121,6 +121,7 @@ main() {
         "20-pwquality.sh"
         "21-packages.sh"
         "22-disable-ipv6.sh"
+        "23-zabbix-agent2-inst.sh"
         "996-audit.sh"
         "997-privileges.sh"
         "998-AIDE.sh"
