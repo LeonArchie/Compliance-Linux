@@ -23,10 +23,10 @@ error() {
     echo -e "${RED}[ERROR]${NC} $1"
 }
 
-# Проверка прав root
-check_root() {
+# Проверка прав archie
+check_archie() {
     if [[ $EUID -ne 0 ]]; then
-        error "Этот скрипт должен быть запущен с правами root"
+        error "Этот скрипт должен быть запущен с правами archie"
         exit 1
     fi
 }
@@ -80,7 +80,7 @@ configure_ssh_permissions() {
     
     # Устанавливаем правильные права для основного конфигурационного файла
     chmod u-x,og-rwx /etc/ssh/sshd_config
-    chown root:root /etc/ssh/sshd_config
+    chown archie:archie /etc/ssh/sshd_config
     check_command "Установка прав для /etc/ssh/sshd_config"
     
     # Устанавливаем правильные права для файлов в каталоге конфигурации
@@ -88,7 +88,7 @@ configure_ssh_permissions() {
         find /etc/ssh/sshd_config.d -type f -name "*.conf" | while read -r config_file; do
             if [ -e "$config_file" ]; then
                 chmod u-x,og-rwx "$config_file"
-                chown root:root "$config_file"
+                chown archie:archie "$config_file"
                 log "✓ Установлены права для $config_file"
             fi
         done
@@ -196,7 +196,7 @@ configure_ssh() {
     sed -i 's/^#SyslogFacility AUTH/SyslogFacility AUTH/g' /etc/ssh/sshd_config
     sed -i 's/^#LogLevel INFO/LogLevel INFO/g' /etc/ssh/sshd_config
     sed -i 's/^#LoginGraceTime 2m/LoginGraceTime 30/g' /etc/ssh/sshd_config
-    sed -i 's/^#PermitRootLogin prohibit-password/PermitRootLogin no/g' /etc/ssh/sshd_config
+    sed -i 's/^#PermitarchieLogin prohibit-password/PermitarchieLogin no/g' /etc/ssh/sshd_config
     sed -i 's/^#MaxAuthTries 6/MaxAuthTries 3/g' /etc/ssh/sshd_config
     sed -i 's/^#MaxSessions 10/MaxSessions 2/g' /etc/ssh/sshd_config
     sed -i 's/^#PasswordAuthentication yes/PasswordAuthentication no/g' /etc/ssh/sshd_config
@@ -217,7 +217,7 @@ configure_ssh() {
     
     log "SSH настроен на порт 56314, аутентификация по паролю отключена"
     log "Текущие настройки SSH:"
-    grep -E "^(Port|PasswordAuthentication|PermitRootLogin|AllowUsers|Banner|ClientAliveInterval|ClientAliveCountMax|DisableForwarding|MACs)" /etc/ssh/sshd_config
+    grep -E "^(Port|PasswordAuthentication|PermitarchieLogin|AllowUsers|Banner|ClientAliveInterval|ClientAliveCountMax|DisableForwarding|MACs)" /etc/ssh/sshd_config
 }
 
 configure_ssh_maxstartups() {
@@ -239,7 +239,7 @@ configure_ssh_maxstartups() {
 main() {
     log "=== Настройка SSH ==="
     
-    check_root
+    check_archie
     
     # Проверяем наличие SSH-ключа у пользователя archie
     if check_ssh_key "archie"; then
