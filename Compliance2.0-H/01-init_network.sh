@@ -53,7 +53,7 @@ network:
   ethernets:
     ens18:
       dhcp4: false
-      addresses: [10.100.0.6/24]
+      addresses: [10.100.0.7/24]
       nameservers:
         addresses: [10.100.0.1]
       routes:
