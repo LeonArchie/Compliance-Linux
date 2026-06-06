@@ -53,14 +53,17 @@ network:
   ethernets:
     ens18:
       dhcp4: false
-      addresses: [10.100.0.7/24]
+      dhcp6: false
+      accept-ra: false
+      link-local: []
+      addresses: [10.100.0.100/24]
       nameservers:
         addresses: [10.100.0.1]
       routes:
         - to: default
           via: 10.100.0.1
-          on-link: true
   version: 2
+  renderer: networkd
 EOF
 
     netplan generate
