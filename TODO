@@ -1,0 +1,100 @@
+# Обновить список пакетов
+sudo apt update
+
+# Установить последнюю версию ядра и заголовочные файлы
+sudo apt install --only-upgrade linux-image-$(uname -r) linux-headers-$(uname -r)
+
+# Если доступна более новая версия ядра (рекомендуется)
+sudo apt install linux-image-generic linux-headers-generic
+
+# Перезагрузить систему для загрузки нового ядра
+sudo reboot
+
+# После перезагрузки проверить версию ядра
+uname -r
+
+# Git (CVE-2024-52005)
+sudo apt install --only-upgrade git git-man
+
+# Avahi (CVE-2026-24401, CVE-2025-59529, CVE-2024-52615, CVE-2024-52616)
+sudo apt install --only-upgrade avahi-daemon libavahi-common-data libavahi-common3 libavahi-client3
+
+# Dnsmasq (CVE-2025-12200, CVE-2025-12198, CVE-2025-12199 - REJECTED, но лучше обновить)
+sudo apt install --only-upgrade dnsmasq-base
+
+# Python urllib3 (CVE-2026-21441, CVE-2025-66471, CVE-2024-35195, CVE-2025-66418)
+sudo apt install --only-upgrade python3-pip python3-pip-whl
+
+# Отключить ksmbd (CVE-2025-68263, CVE-2026-23364, CVE-2026-23220)
+sudo systemctl stop ksmbd
+sudo systemctl disable ksmbd
+sudo modprobe -r ksmbd
+
+# Отключить NFC (CVE-2026-23372, CVE-2026-23330)
+sudo systemctl stop nfc
+sudo systemctl disable nfc
+sudo modprobe -r nfc nci nfc_rawsock
+
+# Отключить NVMe-oF (CVE-2026-23112, CVE-2026-22998)
+sudo modprobe -r nvmet nvmet-tcp
+echo "blacklist nvmet" | sudo tee -a /etc/modprobe.d/blacklist-nvmet.conf
+
+
+# Обновить все установленные пакеты до последних версий
+sudo apt update
+sudo apt upgrade -y
+
+# Дополнительно: обновить зависимости и удалить устаревшие пакеты
+sudo apt full-upgrade -y
+sudo apt autoremove -y
+sudo apt autoclean
+
+
+# Чёрный список драйверов USB (CVE-2026-23312, CVE-2026-23365, CVE-2026-23307, CVE-2026-23347)
+cat <<EOF | sudo tee /etc/modprobe.d/blacklist-usb-drivers.conf
+blacklist kaweth
+blacklist kalmia
+blacklist ems_usb
+blacklist f81604
+blacklist pegasus
+blacklist rtl8150
+blacklist usb_8dev
+blacklist esd_usb
+blacklist mcba_usb
+blacklist gs_usb
+blacklist etas_es58x
+blacklist kvaser_usb
+EOF
+
+# Блокировка драйверов беспроводных карт (CVE-2026-23133, CVE-2026-23135, CVE-2026-23315, CVE-2026-23363, CVE-2026-23325)
+cat <<EOF | sudo tee /etc/modprobe.d/blacklist-wifi-drivers.conf
+blacklist ath10k
+blacklist ath11k
+blacklist ath12k
+blacklist mt76
+blacklist mt7915
+blacklist mt7925
+blacklist mt7996
+blacklist brcmfmac
+blacklist rtw88
+blacklist rtw89
+blacklist rsi
+blacklist wlcore
+EOF
+
+# Блокировка драйверов Bluetooth (CVE-2026-23395, CVE-2024-53207, CVE-2026-23146)
+cat <<EOF | sudo tee /etc/modprobe.d/blacklist-bluetooth.conf
+blacklist bluetooth
+blacklist btusb
+blacklist hci_uart
+blacklist btbcm
+blacklist btintel
+EOF
+
+# Обновить initramfs
+sudo update-initramfs -u
+
+# Если NFS не нужен
+sudo systemctl stop nfs-server nfs-common
+sudo systemctl disable nfs-server nfs-common
+
