@@ -56,9 +56,10 @@ network:
       dhcp6: false
       accept-ra: false
       link-local: []
-      addresses: [10.100.0.100/24]
+      addresses: [10.100.0.7/24]
       nameservers:
         addresses: [10.100.0.1]
+        search: [local]
       routes:
         - to: default
           via: 10.100.0.1
